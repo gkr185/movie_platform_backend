@@ -11,6 +11,7 @@
     <modules>
         <module>MovieService</module>
         <module>UserService</module>
+        <module>CategoriesService</module>
 
     </modules>
 

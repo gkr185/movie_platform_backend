@@ -1,6 +1,7 @@
 package com.edu.bcu.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 20)
+    @Size(min = 3, max = 20, message = "用户名长度必须在3-20之间")
     private String username;
 
     @Column(nullable = false, length = 100)

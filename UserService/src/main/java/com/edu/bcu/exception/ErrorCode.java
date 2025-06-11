@@ -21,7 +21,8 @@ public enum ErrorCode {
     LOGIN_ERROR(1006, "用户名或密码错误"),
     OLD_PASSWORD_ERROR(1007, "原密码错误"),
     INVALID_TOKEN(1008, "无效的token"),
-    TOKEN_EXPIRED(1009, "token已过期");
+    TOKEN_EXPIRED(1009, "token已过期"),
+    USERNAME_LENGTH_ERROR(1010, "用户名长度必须在3-20之间");
 
     private final Integer code;
     private final String message;
