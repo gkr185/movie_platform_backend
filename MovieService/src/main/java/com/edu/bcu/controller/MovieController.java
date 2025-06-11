@@ -1,5 +1,6 @@
 package com.edu.bcu.controller;
 
+import com.edu.bcu.entity.Category;
 import com.edu.bcu.entity.Movie;
 import com.edu.bcu.service.MovieService;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,10 @@ public class MovieController {
     @GetMapping("/categories/{categoryId}")
     public List<Movie> getMoviesByCategory(@PathVariable String categoryId) {
         return movieService.searchByCategory(categoryId);
+    }
+    @GetMapping("/getCategories/{movieId}")
+    public List<Category> getCategoriesByMovieId(@PathVariable Long movieId) {
+        return movieService.getCategoriesByMovieId(movieId);
     }
 
     @GetMapping("/rankings/hot")

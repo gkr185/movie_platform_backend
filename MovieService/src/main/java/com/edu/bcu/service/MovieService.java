@@ -112,4 +112,15 @@ public class MovieService {
     public List<Movie> getNewMovice() {
         return jpaRepository.findByCreatTime();
     }
+    public List<Category> getCategoriesByMovieId(Long movieId) {
+        // 先到 movie_category 表中根据 movieId 查询出所有相关的 categoryId
+        List<MovieCategory> movieCategories = movieCategoryRepository.findByMovieId(movieId);
+        List<Long> categoryIds = new ArrayList<>();
+        for (MovieCategory movieCategory : movieCategories) {
+            categoryIds.add((long) movieCategory.getCategoryId());
+        }
+
+        // 再到 category 表中根据这些 categoryId 找出对应的类别
+        return categoryRepository.findAllById(categoryIds);
+    }
 }
