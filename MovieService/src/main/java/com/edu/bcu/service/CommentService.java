@@ -45,6 +45,8 @@ public class CommentService {
     }
 
     public Page<Comment> getCommentsByMovieId(Long movieId, int page, int size, String sort) {
+        // 确保页码不小于1
+        page = Math.max(1, page);
         Sort sortBy = sort.equals("hot") ?
                 Sort.by("likeCount").descending() :
                 Sort.by("createTime").descending();
