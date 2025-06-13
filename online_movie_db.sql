@@ -11,7 +11,7 @@
  Target Server Version : 80036 (8.0.36)
  File Encoding         : 65001
 
- Date: 11/06/2025 12:58:14
+ Date: 13/06/2025 18:44:37
 */
 
 SET NAMES utf8mb4;
@@ -23,7 +23,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `advertisement`;
 CREATE TABLE `advertisement`  (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '广告ID',
-  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '广告标题',
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '广告图片URL',
   `video_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '广告视频URL',
   `link_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '跳转链接',
@@ -79,7 +79,7 @@ CREATE TABLE `comment`  (
   INDEX `idx_comment_create_time`(`create_time` ASC) USING BTREE,
   CONSTRAINT `comment_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `comment_ibfk_2` FOREIGN KEY (`movie_id`) REFERENCES `movie` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '评论表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '评论表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for feedback
@@ -88,18 +88,31 @@ DROP TABLE IF EXISTS `feedback`;
 CREATE TABLE `feedback`  (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '反馈ID',
   `user_id` int UNSIGNED NOT NULL COMMENT '用户ID',
-  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '反馈内容',
-  `contact` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '联系方式',
-  `type` tinyint NULL DEFAULT 0 COMMENT '反馈类型(0:建议,1:投诉,2:其他)',
-  `status` tinyint NULL DEFAULT 0 COMMENT '处理状态(0:未处理,1:处理中,2:已处理)',
-  `reply` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '回复内容',
+  `content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `contact` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `type` int NULL DEFAULT NULL,
+  `status` int NULL DEFAULT NULL,
+  `reply` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `reply_time` datetime NULL DEFAULT NULL COMMENT '回复时间',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `user_id`(`user_id` ASC) USING BTREE,
   CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户反馈表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户反馈表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for feedback_process
+-- ----------------------------
+DROP TABLE IF EXISTS `feedback_process`;
+CREATE TABLE `feedback_process`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `create_time` date NULL DEFAULT NULL,
+  `reply` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `status` int NULL DEFAULT NULL,
+  `feedback_id` int NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for movie
@@ -160,18 +173,48 @@ CREATE TABLE `movie_category`  (
 DROP TABLE IF EXISTS `news`;
 CREATE TABLE `news`  (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '资讯ID',
-  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '资讯标题',
-  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '资讯内容',
-  `author` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '作者',
-  `source` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '来源',
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `author` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `source` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `cover_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '封面图片',
-  `is_top` tinyint NULL DEFAULT 0 COMMENT '是否置顶(0:否,1:是)',
-  `status` tinyint NULL DEFAULT 1 COMMENT '状态(0:草稿,1:发布)',
+  `is_top` int NULL DEFAULT NULL,
+  `status` int NULL DEFAULT NULL,
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `publish_time` datetime(6) NULL DEFAULT NULL,
+  `category_id` int UNSIGNED NULL DEFAULT NULL COMMENT '分类ID',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_news_create_time`(`create_time` ASC) USING BTREE,
+  INDEX `fk_news_category`(`category_id` ASC) USING BTREE,
+  CONSTRAINT `fk_news_category` FOREIGN KEY (`category_id`) REFERENCES `news_category` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统资讯表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for news_category
+-- ----------------------------
+DROP TABLE IF EXISTS `news_category`;
+CREATE TABLE `news_category`  (
+  `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '分类ID',
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '分类名称',
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '分类描述',
+  `sort_order` int NULL DEFAULT 0 COMMENT '排序(值越小越靠前)',
+  `status` tinyint NULL DEFAULT 1 COMMENT '状态(0:禁用,1:启用)',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_news_create_time`(`create_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统资讯表' ROW_FORMAT = Dynamic;
+  UNIQUE INDEX `idx_category_name`(`name` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '资讯分类表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for news_subscriber
+-- ----------------------------
+DROP TABLE IF EXISTS `news_subscriber`;
+CREATE TABLE `news_subscriber`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for permission
@@ -235,8 +278,8 @@ CREATE TABLE `user`  (
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'default_avatar.jpg' COMMENT '头像URL',
   `register_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
   `last_login_time` datetime NULL DEFAULT NULL COMMENT '最后登录时间',
-  `user_status` tinyint NULL DEFAULT 1 COMMENT '用户状态(0:禁用,1:正常,2:待验证)',
-  `is_vip` tinyint NULL DEFAULT 0 COMMENT '是否VIP(0:否,1:是)',
+  `user_status` int NULL DEFAULT NULL,
+  `is_vip` int NULL DEFAULT NULL,
   `vip_expire_time` datetime NULL DEFAULT NULL COMMENT 'VIP过期时间',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -245,7 +288,7 @@ CREATE TABLE `user`  (
   UNIQUE INDEX `email`(`email` ASC) USING BTREE,
   INDEX `idx_username`(`username` ASC) USING BTREE,
   INDEX `idx_email`(`email` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for user_behavior
@@ -278,14 +321,14 @@ CREATE TABLE `user_favorite`  (
   INDEX `idx_user_favorite_movie_id`(`movie_id` ASC) USING BTREE,
   CONSTRAINT `user_favorite_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `user_favorite_ibfk_2` FOREIGN KEY (`movie_id`) REFERENCES `movie` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户收藏表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户收藏表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for user_history
 -- ----------------------------
 DROP TABLE IF EXISTS `user_history`;
 CREATE TABLE `user_history`  (
-  `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '历史记录ID',
+  `id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` int UNSIGNED NOT NULL COMMENT '用户ID',
   `movie_id` int UNSIGNED NOT NULL COMMENT '电影ID',
   `play_time` int NULL DEFAULT 0 COMMENT '播放时长(秒)',
@@ -298,7 +341,7 @@ CREATE TABLE `user_history`  (
   INDEX `idx_user_history_movie_id`(`movie_id` ASC) USING BTREE,
   CONSTRAINT `user_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `user_history_ibfk_2` FOREIGN KEY (`movie_id`) REFERENCES `movie` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户观影历史表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户观影历史表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for user_role
@@ -355,5 +398,20 @@ CREATE TABLE `vip_order`  (
   INDEX `idx_vip_order_status`(`status` ASC) USING BTREE,
   CONSTRAINT `vip_order_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '会员订单表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for watch_history
+-- ----------------------------
+DROP TABLE IF EXISTS `watch_history`;
+CREATE TABLE `watch_history`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `create_time` datetime(6) NOT NULL,
+  `movie_id` bigint NOT NULL,
+  `progress` double NOT NULL,
+  `update_time` datetime(6) NOT NULL,
+  `user_id` bigint NOT NULL,
+  `watch_time` int NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;

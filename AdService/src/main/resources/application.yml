@@ -1,0 +1,45 @@
+server:
+  port: 8065
+spring:
+  application:
+    name: AdService
+  datasource:
+    url: jdbc:mysql://localhost:3306/online_movie_db?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      max-lifetime: 1800000
+      minimum-idle: 10
+      auto-commit: true
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+      idle-timeout: 30000
+      connection-timeout: 30000
+      pool-name: HikariPoolCP
+    type: com.zaxxer.hikari.HikariDataSource
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: AdService
+        instance-id: ${spring.application.name}:${server.port}
+        prefer-ip-address: true
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: true
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+    database: mysql
+
+logging:
+  level:
+    com.bcu.movie: DEBUG
+    org.springframework: INFO
+    org.hibernate: INFO

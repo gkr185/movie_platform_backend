@@ -1,0 +1,40 @@
+server:
+  port: 8064
+
+spring:
+  application:
+    name: news-feedback-management
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/online_movie_db?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: ${spring.application.name}
+        register: true
+        instance-id: ${spring.application.name}-${server.port}
+        prefer-ip-address: true
+        ip-address: ${spring.cloud.client.ip-address}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://localhost:8761/eureka/
+      instance:
+        prefer-ip-address: true
+  web:
+    resources:
+      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:uploads/
+logging:
+  level:
+    org.springframework.web.socket: DEBUG
+    org.apache.coyote: DEBUG
