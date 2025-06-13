@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users/{userId}/favorites")
+@RequestMapping("/api/favorites/{userId}/favorites")
 public class UserFavoriteController {
     private final UserFavoriteService favoriteService;
 

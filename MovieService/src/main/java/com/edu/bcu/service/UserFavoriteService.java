@@ -5,6 +5,7 @@ import com.edu.bcu.entity.UserFavorite;
 import com.edu.bcu.repository.jpa.MovieJpaRepository;
 import com.edu.bcu.repository.jpa.UserFavoriteRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ public class UserFavoriteService {
         this.movieJpaRepository = movieJpaRepository;
     }
 
+    @Transactional
     public UserFavorite addFavorite(Long userId, Long movieId) {
         if (exists(userId, movieId)) {
             throw new RuntimeException("已收藏该电影");
@@ -29,6 +31,7 @@ public class UserFavoriteService {
         return favoriteRepository.save(favorite);
     }
 
+    @Transactional
     public void removeFavorite(Long userId, Long movieId) {
         favoriteRepository.deleteByUserIdAndMovieId(userId, movieId);
     }
