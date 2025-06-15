@@ -1,0 +1,72 @@
+server:
+  port: 8067
+spring:
+  application:
+    name: RBACService
+  datasource:
+    url: jdbc:mysql://localhost:3306/online_movie_db?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      max-lifetime: 1800000
+      minimum-idle: 10
+      auto-commit: true
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+      idle-timeout: 30000
+      connection-timeout: 30000
+      pool-name: HikariPoolCP
+    type: com.zaxxer.hikari.HikariDataSource
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: ${spring.application.name}
+        instance-id: ${spring.application.name}-${server.port}
+        prefer-ip-address: true
+        ip-address: ${spring.cloud.client.ip-address}
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+    compatibility-verifier:
+      enabled: false
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.edu.bcu: debug
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+# SpringDoc配置
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: method
+  show-actuator: true
+  packages-to-scan: com.edu.bcu.controller
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+    

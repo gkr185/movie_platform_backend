@@ -5,8 +5,11 @@ import com.edu.bcu.dto.UserRegisterDTO;
 import com.edu.bcu.entity.User;
 import com.edu.bcu.repository.UserRepository;
 import com.edu.bcu.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -100,5 +103,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean checkUsernameAvailable(String username) {
         return !userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<User> searchUsers(String keyword, Pageable pageable) {
+        if (!StringUtils.hasText(keyword)) {
+            return getAllUsers(pageable);
+        }
+        return userRepository.findByKeyword(keyword.trim(), pageable);
     }
 } 

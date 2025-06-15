@@ -15,6 +15,7 @@
         <module>NewsAndFeedbackService</module>
         <module>AdService</module>
         <module>VIPpayService</module>
+        <module>RBACService</module>
 
     </modules>
 

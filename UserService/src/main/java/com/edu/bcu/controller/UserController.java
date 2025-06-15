@@ -13,6 +13,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "用户管理", description = "用户相关接口")
@@ -92,5 +96,47 @@ public class UserController {
     public Result<Boolean> checkUsername(@RequestParam String username) {
         boolean available = userService.checkUsernameAvailable(username);
         return Result.success(available);
+    }
+
+    @Operation(summary = "分页获取用户列表", description = "分页获取所有用户信息")
+    @Parameters({
+        @Parameter(name = "page", description = "页码(从0开始)", required = false),
+        @Parameter(name = "size", description = "每页大小", required = false),
+        @Parameter(name = "sort", description = "排序字段", required = false)
+    })
+    @GetMapping("/list")
+    public Result<Page<User>> getUserList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createTime") String sort,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+            ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+        Page<User> userPage = userService.getAllUsers(pageable);
+        return Result.success("获取成功", userPage);
+    }
+
+    @Operation(summary = "搜索用户", description = "根据关键词搜索用户(支持用户名、邮箱、手机号)")
+    @Parameters({
+        @Parameter(name = "keyword", description = "搜索关键词", required = true),
+        @Parameter(name = "page", description = "页码(从0开始)", required = false),
+        @Parameter(name = "size", description = "每页大小", required = false),
+        @Parameter(name = "sort", description = "排序字段", required = false)
+    })
+    @GetMapping("/search")
+    public Result<Page<User>> searchUsers(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createTime") String sort,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+            ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+        Page<User> userPage = userService.searchUsers(keyword, pageable);
+        return Result.success("搜索成功", userPage);
     }
 }
