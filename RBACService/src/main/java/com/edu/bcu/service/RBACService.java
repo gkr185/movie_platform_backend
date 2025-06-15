@@ -43,6 +43,55 @@ public interface RBACService {
      */
     Set<Role> getUserRoles(Integer userId);
     
+    // ========== 角色CRUD管理 ==========
+    
+    /**
+     * 创建角色
+     * @param name 角色名称
+     * @param description 角色描述
+     * @return 创建的角色
+     */
+    Role createRole(String name, String description);
+    
+    /**
+     * 更新角色信息
+     * @param roleId 角色ID
+     * @param name 角色名称
+     * @param description 角色描述
+     * @return 更新后的角色
+     */
+    Role updateRole(Integer roleId, String name, String description);
+    
+    /**
+     * 删除角色
+     * @param roleId 角色ID
+     */
+    void deleteRole(Integer roleId);
+    
+    /**
+     * 启用/禁用角色
+     * @param roleId 角色ID
+     * @param status 状态(1:启用 0:禁用)
+     */
+    void updateRoleStatus(Integer roleId, Integer status);
+    
+    // ========== 权限CRUD管理 ==========
+    
+    /**
+     * 更新权限信息
+     * @param permissionId 权限ID
+     * @param name 权限名称
+     * @param description 权限描述
+     * @return 更新后的权限
+     */
+    Permission updatePermission(Integer permissionId, String name, String description);
+    
+    /**
+     * 删除权限
+     * @param permissionId 权限ID
+     */
+    void deletePermission(Integer permissionId);
+    
     // ========== 用户角色管理 ==========
     
     /**
@@ -78,7 +127,7 @@ public interface RBACService {
     // ========== 查询方法 ==========
     
     /**
-     * 获取所有角色
+     * 获取所有角色（包括启用和禁用状态）
      * @return 角色列表
      */
     List<Role> getAllRoles();
@@ -95,6 +144,20 @@ public interface RBACService {
      * @return 权限集合
      */
     Set<Permission> getRolePermissions(Integer roleId);
+    
+    /**
+     * 根据ID获取角色
+     * @param roleId 角色ID
+     * @return 角色信息
+     */
+    Role getRoleById(Integer roleId);
+    
+    /**
+     * 根据ID获取权限
+     * @param permissionId 权限ID
+     * @return 权限信息
+     */
+    Permission getPermissionById(Integer permissionId);
     
     // ========== 权限注册方法 (供其他微服务扩展使用) ==========
     

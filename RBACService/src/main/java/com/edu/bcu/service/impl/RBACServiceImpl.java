@@ -7,6 +7,7 @@ import com.edu.bcu.repository.RoleRepository;
 import com.edu.bcu.service.RBACService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ public class RBACServiceImpl implements RBACService {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public boolean hasPermission(Integer userId, String permissionCode) {
@@ -63,16 +65,150 @@ public class RBACServiceImpl implements RBACService {
         return roleRepository.findRolesByUserId(userId);
     }
 
+    // ========== 角色CRUD管理 ==========
+
+    @Override
+    @Transactional
+    public Role createRole(String name, String description) {
+        log.info("创建角色: name={}, description={}", name, description);
+        
+        if (roleRepository.existsByName(name)) {
+            throw new RuntimeException("角色名称已存在: " + name);
+        }
+        
+        Role role = new Role();
+        role.setName(name);
+        role.setDescription(description);
+        role.setStatus(1); // 默认启用
+        
+        Role savedRole = roleRepository.save(role);
+        log.info("角色创建成功，ID: {}", savedRole.getId());
+        return savedRole;
+    }
+
+    @Override
+    @Transactional
+    public Role updateRole(Integer roleId, String name, String description) {
+        log.info("更新角色: roleId={}, name={}, description={}", roleId, name, description);
+        
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("角色不存在: " + roleId));
+        
+        // 检查名称是否重复（排除自己）
+        if (!role.getName().equals(name) && roleRepository.existsByName(name)) {
+            throw new RuntimeException("角色名称已存在: " + name);
+        }
+        
+        role.setName(name);
+        role.setDescription(description);
+        
+        Role updatedRole = roleRepository.save(role);
+        log.info("角色更新成功: {}", roleId);
+        return updatedRole;
+    }
+
+    @Override
+    @Transactional
+    public void deleteRole(Integer roleId) {
+        log.info("删除角色: {}", roleId);
+        
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("角色不存在: " + roleId));
+        
+        // 检查是否有用户使用此角色
+        long userCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM user_role WHERE role_id = ?", 
+                Long.class, roleId);
+        
+        if (userCount > 0) {
+            throw new RuntimeException("无法删除角色，还有 " + userCount + " 个用户使用此角色");
+        }
+        
+        // 删除角色权限关联
+        jdbcTemplate.update("DELETE FROM role_permission WHERE role_id = ?", roleId);
+        
+        // 删除角色
+        roleRepository.delete(role);
+        log.info("角色删除成功: {}", roleId);
+    }
+
+    @Override
+    @Transactional
+    public void updateRoleStatus(Integer roleId, Integer status) {
+        log.info("更新角色状态: roleId={}, status={}", roleId, status);
+        
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("角色不存在: " + roleId));
+        
+        role.setStatus(status);
+        roleRepository.save(role);
+        log.info("角色状态更新成功: {}", roleId);
+    }
+
+    // ========== 权限CRUD管理 ==========
+
+    @Override
+    @Transactional
+    public Permission updatePermission(Integer permissionId, String name, String description) {
+        log.info("更新权限: permissionId={}, name={}, description={}", permissionId, name, description);
+        
+        Permission permission = permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new RuntimeException("权限不存在: " + permissionId));
+        
+        permission.setName(name);
+        permission.setDescription(description);
+        
+        Permission updatedPermission = permissionRepository.save(permission);
+        log.info("权限更新成功: {}", permissionId);
+        return updatedPermission;
+    }
+
+    @Override
+    @Transactional
+    public void deletePermission(Integer permissionId) {
+        log.info("删除权限: {}", permissionId);
+        
+        Permission permission = permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new RuntimeException("权限不存在: " + permissionId));
+        
+        // 检查是否有角色使用此权限
+        long roleCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM role_permission WHERE permission_id = ?", 
+                Long.class, permissionId);
+        
+        if (roleCount > 0) {
+            throw new RuntimeException("无法删除权限，还有 " + roleCount + " 个角色使用此权限");
+        }
+        
+        // 删除权限
+        permissionRepository.delete(permission);
+        log.info("权限删除成功: {}", permissionId);
+    }
+
+    // ========== 用户角色管理 ==========
+
     @Override
     @Transactional
     public void assignRolesToUser(Integer userId, Set<Integer> roleIds) {
         log.info("为用户 {} 分配角色: {}", userId, roleIds);
         
-        // 由于我们没有UserRole实体类，这个功能暂时使用空实现
-        // 在实际项目中，这应该通过UserService来处理，或者创建UserRole实体类
-        log.warn("用户角色分配功能需要通过UserService来实现，当前为空实现");
+        // 验证角色是否存在
+        for (Integer roleId : roleIds) {
+            if (!roleRepository.existsById(roleId)) {
+                throw new RuntimeException("角色不存在: " + roleId);
+            }
+        }
         
-        log.info("用户 {} 角色分配完成（空实现）", userId);
+        // 先删除用户现有角色
+        jdbcTemplate.update("DELETE FROM user_role WHERE user_id = ?", userId);
+        
+        // 批量插入新角色
+        String sql = "INSERT INTO user_role (user_id, role_id, create_time) VALUES (?, ?, NOW())";
+        for (Integer roleId : roleIds) {
+            jdbcTemplate.update(sql, userId, roleId);
+        }
+        
+        log.info("用户 {} 角色分配完成，分配了 {} 个角色", userId, roleIds.size());
     }
 
     @Override
@@ -80,10 +216,16 @@ public class RBACServiceImpl implements RBACService {
     public void removeRolesFromUser(Integer userId, Set<Integer> roleIds) {
         log.info("移除用户 {} 的角色: {}", userId, roleIds);
         
-        // 由于我们没有UserRole实体类，这个功能暂时使用空实现
-        log.warn("用户角色移除功能需要通过UserService来实现，当前为空实现");
+        if (roleIds.isEmpty()) {
+            return;
+        }
         
-        log.info("用户 {} 角色移除完成（空实现）", userId);
+        String sql = "DELETE FROM user_role WHERE user_id = ? AND role_id = ?";
+        for (Integer roleId : roleIds) {
+            jdbcTemplate.update(sql, userId, roleId);
+        }
+        
+        log.info("用户 {} 角色移除完成，移除了 {} 个角色", userId, roleIds.size());
     }
 
     @Override
@@ -131,7 +273,7 @@ public class RBACServiceImpl implements RBACService {
 
     @Override
     public List<Role> getAllRoles() {
-        return roleRepository.findActiveRoles();
+        return roleRepository.findAll();
     }
 
     @Override
@@ -142,6 +284,18 @@ public class RBACServiceImpl implements RBACService {
     @Override
     public Set<Permission> getRolePermissions(Integer roleId) {
         return permissionRepository.findPermissionsByRoleId(roleId);
+    }
+
+    @Override
+    public Role getRoleById(Integer roleId) {
+        return roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("角色不存在: " + roleId));
+    }
+
+    @Override
+    public Permission getPermissionById(Integer permissionId) {
+        return permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new RuntimeException("权限不存在: " + permissionId));
     }
 
     @Override
@@ -180,7 +334,4 @@ public class RBACServiceImpl implements RBACService {
             log.info("没有新权限需要注册");
         }
     }
-
-    // ========== 私有辅助方法 ==========
-
 } 

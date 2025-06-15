@@ -29,7 +29,12 @@ public class CategoryServiceImpl implements CategoryService {
         }
         
         Category category = new Category();
-        BeanUtils.copyProperties(categoryDTO, category);
+        // 手动设置字段，避免复制ID字段（创建时ID应该为null，由数据库自动生成）
+        category.setName(categoryDTO.getName());
+        category.setDescription(categoryDTO.getDescription());
+        category.setParentId(categoryDTO.getParentId());
+        category.setSortOrder(categoryDTO.getSortOrder());
+        category.setStatus(categoryDTO.getStatus());
         category.setCreateTime(LocalDateTime.now());
         category.setUpdateTime(LocalDateTime.now());
         return categoryRepository.save(category);
@@ -46,8 +51,18 @@ public class CategoryServiceImpl implements CategoryService {
             throw new IllegalArgumentException("分类名称已存在");
         }
         
-        BeanUtils.copyProperties(categoryDTO, category);
+        // 手动设置字段，避免复制ID字段导致的Hibernate错误
+        category.setName(categoryDTO.getName());
+        category.setDescription(categoryDTO.getDescription());
+        category.setParentId(categoryDTO.getParentId());
+        category.setSortOrder(categoryDTO.getSortOrder());
+        category.setStatus(categoryDTO.getStatus());
         category.setUpdateTime(LocalDateTime.now());
+        
+        // 替代方案：使用BeanUtils但忽略ID字段
+        // BeanUtils.copyProperties(categoryDTO, category, "id");
+        // category.setUpdateTime(LocalDateTime.now());
+        
         return categoryRepository.save(category);
     }
 

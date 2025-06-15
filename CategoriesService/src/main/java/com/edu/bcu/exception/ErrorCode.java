@@ -19,7 +19,11 @@ public enum ErrorCode {
     CATEGORY_HAS_CHILDREN(2003, "该分类下存在子分类，无法删除"),
     CATEGORY_LEVEL_EXCEED(2004, "分类层级超过限制"),
     CATEGORY_PARENT_ERROR(2005, "不能将分类设置为自己的子分类"),
-    CATEGORY_UPDATE_ERROR(2006, "分类更新失败");
+    CATEGORY_UPDATE_ERROR(2006, "分类更新失败"),
+    
+    // 电影分类关联相关错误码 (2100-2199)
+    MOVIE_CATEGORY_EXIST(2100, "电影分类关联已存在"),
+    MOVIE_CATEGORY_NOT_EXIST(2101, "电影分类关联不存在");
 
     private final Integer code;
     private final String message;

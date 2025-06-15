@@ -57,6 +57,80 @@ public class RBACController {
         return Result.success(roles);
     }
 
+    // ========== 角色CRUD管理接口 ==========
+
+    @Operation(summary = "创建角色", description = "创建新角色")
+    @PostMapping("/roles")
+    public Result<Role> createRole(
+            @RequestParam String name,
+            @RequestParam(required = false) String description) {
+        Role role = rbacService.createRole(name, description);
+        return Result.success("角色创建成功", role);
+    }
+
+    @Operation(summary = "更新角色", description = "更新角色信息")
+    @PutMapping("/roles/{roleId}")
+    public Result<Role> updateRole(
+            @Parameter(description = "角色ID") @PathVariable Integer roleId,
+            @RequestParam String name,
+            @RequestParam(required = false) String description) {
+        Role role = rbacService.updateRole(roleId, name, description);
+        return Result.success("角色更新成功", role);
+    }
+
+    @Operation(summary = "删除角色", description = "删除指定角色")
+    @DeleteMapping("/roles/{roleId}")
+    public Result<Void> deleteRole(
+            @Parameter(description = "角色ID") @PathVariable Integer roleId) {
+        rbacService.deleteRole(roleId);
+        return Result.success("角色删除成功", null);
+    }
+
+    @Operation(summary = "更新角色状态", description = "启用或禁用角色")
+    @PutMapping("/roles/{roleId}/status")
+    public Result<Void> updateRoleStatus(
+            @Parameter(description = "角色ID") @PathVariable Integer roleId,
+            @Parameter(description = "状态(1:启用 0:禁用)") @RequestParam Integer status) {
+        rbacService.updateRoleStatus(roleId, status);
+        return Result.success("角色状态更新成功", null);
+    }
+
+    @Operation(summary = "获取角色详情", description = "根据ID获取角色详细信息")
+    @GetMapping("/roles/{roleId}")
+    public Result<Role> getRoleById(
+            @Parameter(description = "角色ID") @PathVariable Integer roleId) {
+        Role role = rbacService.getRoleById(roleId);
+        return Result.success(role);
+    }
+
+    // ========== 权限CRUD管理接口 ==========
+
+    @Operation(summary = "更新权限", description = "更新权限信息")
+    @PutMapping("/permissions/{permissionId}")
+    public Result<Permission> updatePermission(
+            @Parameter(description = "权限ID") @PathVariable Integer permissionId,
+            @RequestParam String name,
+            @RequestParam(required = false) String description) {
+        Permission permission = rbacService.updatePermission(permissionId, name, description);
+        return Result.success("权限更新成功", permission);
+    }
+
+    @Operation(summary = "删除权限", description = "删除指定权限")
+    @DeleteMapping("/permissions/{permissionId}")
+    public Result<Void> deletePermission(
+            @Parameter(description = "权限ID") @PathVariable Integer permissionId) {
+        rbacService.deletePermission(permissionId);
+        return Result.success("权限删除成功", null);
+    }
+
+    @Operation(summary = "获取权限详情", description = "根据ID获取权限详细信息")
+    @GetMapping("/permissions/{permissionId}")
+    public Result<Permission> getPermissionById(
+            @Parameter(description = "权限ID") @PathVariable Integer permissionId) {
+        Permission permission = rbacService.getPermissionById(permissionId);
+        return Result.success(permission);
+    }
+
     // ========== 用户角色管理接口 ==========
 
     @Operation(summary = "分配用户角色", description = "为指定用户分配角色")
@@ -107,7 +181,7 @@ public class RBACController {
 
     // ========== 查询接口 ==========
 
-    @Operation(summary = "获取所有角色", description = "获取系统中所有启用的角色")
+    @Operation(summary = "获取所有角色", description = "获取系统中所有角色（包括启用和禁用状态）")
     @GetMapping("/roles")
     public Result<List<Role>> getAllRoles() {
         List<Role> roles = rbacService.getAllRoles();
