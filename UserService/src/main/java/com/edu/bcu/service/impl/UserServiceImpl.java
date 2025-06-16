@@ -117,4 +117,22 @@ public class UserServiceImpl implements UserService {
         }
         return userRepository.findByKeyword(keyword.trim(), pageable);
     }
+
+    @Override
+    @Transactional
+    public void updateVipStatus(Integer userId, Integer vipType, LocalDateTime vipExpireTime) {
+        User user = getUserById(userId);
+        user.setIsVip(1); // 设置为VIP用户
+        user.setVipExpireTime(vipExpireTime);
+        userRepository.save(user);
+    }
+    
+    @Override
+    @Transactional
+    public void cancelVipStatus(Integer userId) {
+        User user = getUserById(userId);
+        user.setIsVip(0); // 取消VIP状态
+        user.setVipExpireTime(null);
+        userRepository.save(user);
+    }
 } 

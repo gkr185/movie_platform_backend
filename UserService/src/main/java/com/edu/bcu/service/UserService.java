@@ -6,6 +6,8 @@ import com.edu.bcu.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
+
 public interface UserService {
     User register(UserRegisterDTO registerDTO);
     User login(UserLoginDTO loginDTO);
@@ -16,4 +18,8 @@ public interface UserService {
     boolean checkUsernameAvailable(String username);
     Page<User> getAllUsers(Pageable pageable);
     Page<User> searchUsers(String keyword, Pageable pageable);
+    
+    // VIP相关方法
+    void updateVipStatus(Integer userId, Integer vipType, LocalDateTime vipExpireTime);
+    void cancelVipStatus(Integer userId);
 } 

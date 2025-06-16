@@ -3,6 +3,7 @@ package com.edu.bcu.controller;
 import com.edu.bcu.common.Result;
 import com.edu.bcu.dto.UserLoginDTO;
 import com.edu.bcu.dto.UserRegisterDTO;
+import com.edu.bcu.dto.VipUpdateDTO;
 import com.edu.bcu.entity.User;
 import com.edu.bcu.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @Tag(name = "用户管理", description = "用户相关接口")
 @RestController
@@ -138,5 +141,38 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<User> userPage = userService.searchUsers(keyword, pageable);
         return Result.success("搜索成功", userPage);
+    }
+
+    @Operation(summary = "更新用户VIP状态", description = "支付成功后更新用户VIP状态")
+    @Parameters({
+        @Parameter(name = "userId", description = "用户ID", required = true),
+        @Parameter(name = "vipUpdateDTO", description = "VIP更新信息", required = true)
+    })
+    @PutMapping("/{userId}/vip")
+    public Result<Void> updateVipStatus(
+            @PathVariable Integer userId,
+            @RequestBody VipUpdateDTO vipUpdateDTO
+    ) {
+        userService.updateVipStatus(userId, vipUpdateDTO.getVipType(), vipUpdateDTO.getVipExpireTime());
+        return Result.success("VIP状态更新成功", null);
+    }
+    
+    @PutMapping("/{userId}/vip/params")
+    public Result<Void> updateVipStatusByParams(
+            @PathVariable Integer userId,
+            @RequestParam Integer vipType,
+            @RequestParam String vipExpireTime
+    ) {
+        LocalDateTime expireTime = LocalDateTime.parse(vipExpireTime);
+        userService.updateVipStatus(userId, vipType, expireTime);
+        return Result.success("VIP状态更新成功", null);
+    }
+
+    @Operation(summary = "取消用户VIP状态", description = "取消用户VIP状态")
+    @Parameter(name = "userId", description = "用户ID", required = true)
+    @DeleteMapping("/{userId}/vip")
+    public Result<Void> cancelVipStatus(@PathVariable Integer userId) {
+        userService.cancelVipStatus(userId);
+        return Result.success("VIP状态已取消", null);
     }
 }
