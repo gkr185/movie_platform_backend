@@ -7,10 +7,13 @@ import com.bcu.movie.repository.FeedbackRepository;
 import com.bcu.movie.repository.UserRepository;
 import com.bcu.movie.service.FeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -77,5 +80,23 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedbackRepository.save(feedback);
     }
 
+    @Override
+    public Page<Feedback> getAllFeedbacks(Pageable pageable) {
+        return feedbackRepository.findAllWithUser(pageable);
+    }
 
+    @Override
+    public Page<Feedback> getFeedbacksByStatus(Integer status, Pageable pageable) {
+        return feedbackRepository.findByStatus(status, pageable);
+    }
+
+    @Override
+    public List<Feedback> getFeedbacksByUserId(Integer userId) {
+        return feedbackRepository.findByUser_Id(userId);
+    }
+
+    @Override
+    public List<Feedback> getFeedbacksByType(Integer type) {
+        return feedbackRepository.findByType(type);
+    }
 }

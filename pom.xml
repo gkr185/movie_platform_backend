@@ -16,6 +16,7 @@
         <module>AdService</module>
         <module>VIPpayService</module>
         <module>RBACService</module>
+        <module>FileUploadService</module>
 
     </modules>
 

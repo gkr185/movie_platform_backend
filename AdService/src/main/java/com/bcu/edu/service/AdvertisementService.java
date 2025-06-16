@@ -23,4 +23,7 @@ public interface AdvertisementService {
     
     // 随机获取一个视频广告
     Advertisement getRandomVideoAdvertisement();
+    
+    // 根据ID获取广告详情
+    Advertisement getAdvertisementById(Integer id);
 } 

@@ -1,4 +1,4 @@
-package com.bcu.movie.controller;
+package com.bcu.movie.Controller;
 
 import com.bcu.movie.entity.NewsCategory;
 import com.bcu.movie.service.NewsCategoryService;

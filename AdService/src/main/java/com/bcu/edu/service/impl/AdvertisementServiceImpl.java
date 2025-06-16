@@ -79,4 +79,10 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         Random random = new Random();
         return videoAds.get(random.nextInt(videoAds.size()));
     }
+
+    @Override
+    public Advertisement getAdvertisementById(Integer id) {
+        return advertisementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("广告不存在，ID: " + id));
+    }
 } 

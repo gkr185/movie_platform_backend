@@ -1,5 +1,6 @@
 package com.bcu.movie.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.sql.Date;
@@ -10,6 +11,7 @@ import java.sql.Timestamp;
 // 反馈实体类
 @Entity
 @Table(name = "feedback")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

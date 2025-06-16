@@ -50,6 +50,17 @@ public class AdvertisementController {
         }
     }
 
+    // 根据ID获取广告详情
+    @GetMapping("/{id}")
+    public ResponseEntity<Advertisement> getAdvertisementById(@PathVariable Integer id) {
+        try {
+            Advertisement advertisement = advertisementService.getAdvertisementById(id);
+            return ResponseEntity.ok(advertisement);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // 获取广告列表（分页）
     @GetMapping
     public ResponseEntity<Page<Advertisement>> getAllAdvertisements(
