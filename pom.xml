@@ -17,6 +17,7 @@
         <module>VIPpayService</module>
         <module>RBACService</module>
         <module>FileUploadService</module>
+        <module>StatisticsService</module>
 
     </modules>
 

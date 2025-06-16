@@ -23,13 +23,14 @@ public class FeedbackController {
     private FeedbackService feedbackService;
 
     @PostMapping("/create")
-    public Feedback createFeedback(@RequestParam Integer userId, @RequestParam String content, @RequestParam Integer type, @RequestParam String contact, @RequestParam Integer status) {
+    public ResponseEntity<Feedback> createFeedback(@RequestParam Integer userId, @RequestParam String content, @RequestParam Integer type, @RequestParam String contact, @RequestParam Integer status) {
         try {
             logger.info("Received create feedback request: userId={}, content={}, type={}, contact={}, status={}", userId, content, type, contact, status);
-            return feedbackService.createFeedback(userId, content, type, contact, status);
+            Feedback feedback = feedbackService.createFeedback(userId, content, type, contact, status);
+            return ResponseEntity.ok(feedback);
         } catch (Exception e) {
             logger.error("Error creating feedback", e);
-            return null;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
