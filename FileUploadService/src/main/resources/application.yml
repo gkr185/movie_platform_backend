@@ -39,6 +39,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 1000MB
+      max-request-size: 5000MB
+      file-size-threshold: 2KB
 
 management:
   endpoints:
@@ -69,4 +75,19 @@ springdoc:
   packages-to-scan: com.edu.bcu.controller
   default-produces-media-type: application/json
   default-consumes-media-type: application/json
-    
+
+# 文件上传配置
+file:
+  upload:
+    base-path: E:/E/movie_platform/public/uploads/
+    base-url: http://localhost:8068/uploads/
+    max-size: 104857600  # 100MB
+    allowed-image-types: jpg,jpeg,png,gif,bmp,webp
+    allowed-video-types: mp4,avi,mov,wmv,flv,mkv,webm
+    avatar-path: avatars/
+    poster-path: posters/
+    video-path: videos/
+    banner-path: banners/
+    news-path: news/
+    ad-path: ads/
+
