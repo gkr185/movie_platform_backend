@@ -55,10 +55,7 @@ logging:
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
 
-# 微服务配置
-user:
-  service:
-    url: http://localhost:8082
+# 微服务配置已移除，直接操作数据库
 
 # SpringDoc配置
 springdoc:

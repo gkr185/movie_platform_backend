@@ -1,21 +1,29 @@
 package com.edu.bcu.service.impl;
 
+import com.edu.bcu.dto.LoginResponse;
 import com.edu.bcu.dto.UserLoginDTO;
 import com.edu.bcu.dto.UserRegisterDTO;
+import com.edu.bcu.dto.UserVO;
 import com.edu.bcu.entity.User;
 import com.edu.bcu.repository.UserRepository;
 import com.edu.bcu.service.UserService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    
+    // Session中存储用户信息的key
+    private static final String USER_SESSION_KEY = "currentUser";
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -46,14 +54,56 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User login(UserLoginDTO loginDTO) {
-        return userRepository.findByUsername(loginDTO.getUsername())
-                .filter(user -> user.getPassword().equals(loginDTO.getPassword())) // 实际应用中需要加密比较
-                .map(user -> {
-                    user.setLastLoginTime(LocalDateTime.now());
-                    return userRepository.save(user);
-                })
+    @Transactional
+    public LoginResponse login(UserLoginDTO loginDTO, HttpServletRequest request) {
+        User user = userRepository.findByUsername(loginDTO.getUsername())
+                .filter(u -> u.getPassword().equals(loginDTO.getPassword())) // 实际应用中需要加密比较
                 .orElseThrow(() -> new RuntimeException("用户名或密码错误"));
+
+        // 更新最后登录时间
+        user.setLastLoginTime(LocalDateTime.now());
+        userRepository.save(user);
+
+        // 创建Session并存储用户信息
+        HttpSession session = request.getSession(true);
+        session.setMaxInactiveInterval(1800); // 30分钟超时
+        session.setAttribute(USER_SESSION_KEY, user);
+
+        // 转换为UserVO（不包含敏感信息如密码）
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+
+        return new LoginResponse(session.getId(), userVO, session.getMaxInactiveInterval());
+    }
+
+    @Override
+    public User getCurrentUser(HttpSession session) {
+        if (session == null) {
+            throw new RuntimeException("未登录");
+        }
+        
+        User user = (User) session.getAttribute(USER_SESSION_KEY);
+        if (user == null) {
+            throw new RuntimeException("登录已过期，请重新登录");
+        }
+        
+        return user;
+    }
+
+    @Override
+    public void logout(HttpSession session) {
+        if (session != null) {
+            session.removeAttribute(USER_SESSION_KEY);
+            session.invalidate();
+        }
+    }
+
+    @Override
+    public boolean isLoggedIn(HttpSession session) {
+        if (session == null) {
+            return false;
+        }
+        return session.getAttribute(USER_SESSION_KEY) != null;
     }
 
     @Override

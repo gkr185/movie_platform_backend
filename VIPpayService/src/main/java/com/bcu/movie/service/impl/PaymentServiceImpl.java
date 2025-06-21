@@ -6,8 +6,8 @@ import com.bcu.movie.enums.OrderStatus;
 import com.bcu.movie.enums.PaymentMethod;
 import com.bcu.movie.enums.VipType;
 import com.bcu.movie.repository.PaymentRepository;
+import com.bcu.movie.repository.UserRepository;
 import com.bcu.movie.service.PaymentService;
-import com.bcu.movie.service.UserServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +31,7 @@ public class PaymentServiceImpl implements PaymentService {
     private PaymentRepository paymentRepository;
     
     @Autowired
-    private UserServiceClient userServiceClient;
+    private UserRepository userRepository;
 
     @Override
     @Transactional
@@ -79,7 +79,13 @@ public class PaymentServiceImpl implements PaymentService {
                 VipType vipType = VipType.getByCode(payment.getVipType());
                 if (vipType != null) {
                     LocalDateTime vipExpireTime = LocalDateTime.now().plusDays(vipType.getDays());
-                    userServiceClient.updateVipStatus(payment.getUserId(), payment.getVipType(), vipExpireTime);
+                    LocalDateTime updateTime = LocalDateTime.now();
+                    
+                    // 直接更新数据库中的用户VIP状态
+                    userRepository.updateVipStatus(payment.getUserId(), 1, vipExpireTime, updateTime);
+                    System.out.println("用户VIP状态更新成功: 用户ID=" + payment.getUserId() + 
+                                     ", VIP类型=" + vipType.getName() + 
+                                     ", 过期时间=" + vipExpireTime);
                 }
             } catch (Exception e) {
                 // 记录日志，但不影响订单状态
